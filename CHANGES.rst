@@ -2,6 +2,9 @@
 =========
 Changelog
 =========
+v3.7.ngsv (2022-03-29)
+
+* https://trello.com/c/cVRlIii9 - added trim-min-check parameter (Min positions to read on trim position estimate)
 
 v3.7 (2022-02-23)
 -----------------
