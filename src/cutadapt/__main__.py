@@ -252,6 +252,8 @@ def get_argument_parser() -> ArgumentParser:
             "value is given, only the 3' end is trimmed. If two "
             "comma-separated cutoffs are given, the 5' end is trimmed with "
             "the first cutoff, the 3' end with the second.")
+    group.add_argument("--trim-min-check", type=int, default=1, help="Min positions to read on trim position estimate. "
+                       "Use when low-quality ends degrade non-monotonous")
     group.add_argument("--quality-base", type=int, default=33, metavar='N',
         help="Assume that quality values in FASTQ are encoded as ascii(quality "
             "+ N). This needs to be set to 64 for some old Illumina "
@@ -765,7 +767,11 @@ def pipeline_from_parsed_args(
         pipeline_add(NextseqQualityTrimmer(args.nextseq_trim, args.quality_base))
 
     add_quality_trimmers(
-        pipeline, args.quality_cutoff, args.quality_cutoff2, args.quality_base
+        pipeline,
+        args.quality_cutoff,
+        args.quality_cutoff2,
+        args.quality_base,
+        args.trim_min_check,
     )
 
     add_adapter_cutter(
@@ -868,9 +874,10 @@ def add_quality_trimmers(
     cutoff1: Optional[str],
     cutoff2: Optional[str],
     quality_base: int,
+    trim_min_check: int,
 ):
     qtrimmers = [
-        QualityTrimmer(*parse_cutoffs(cutoff), quality_base)
+        QualityTrimmer(*parse_cutoffs(cutoff), quality_base, trim_min_check)
         if cutoff is not None and cutoff != "0"
         else None
         for cutoff in (cutoff1, cutoff2)

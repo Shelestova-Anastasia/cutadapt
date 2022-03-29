@@ -3,7 +3,7 @@
 Quality trimming.
 """
 
-def quality_trim_index(str qualities, int cutoff_front, int cutoff_back, int base=33):
+def quality_trim_index(str qualities, int cutoff_front, int cutoff_back, int base=33, int trim_min_check = 1):
     """
     Find the positions at which to trim low-quality ends from a nucleotide sequence.
     Return tuple (start, stop) that indicates the good-quality segment.
@@ -26,10 +26,17 @@ def quality_trim_index(str qualities, int cutoff_front, int cutoff_back, int bas
     # find trim position for 5' end
     s = 0
     max_qual = 0
+    read_positions = 0
     for i in range(len(qualities)):
-        s += cutoff_front - (ord(qualities[i]) - base)
-        if s < 0:
+        read_positions += 1
+        addition = cutoff_front - (ord(qualities[i]) - base)
+
+        if s != 0 or addition > 0 or read_positions >= trim_min_check:
+            s += addition
+
+        if s < 0 and read_positions >= trim_min_check:
             break
+
         if s > max_qual:
             max_qual = s
             start = i + 1
@@ -37,15 +44,23 @@ def quality_trim_index(str qualities, int cutoff_front, int cutoff_back, int bas
     # same for 3' end
     max_qual = 0
     s = 0
+    read_positions = 0
     for i in reversed(xrange(len(qualities))):
-        s += cutoff_back - (ord(qualities[i]) - base)
-        if s < 0:
+        read_positions += 1
+        addition = cutoff_back - (ord(qualities[i]) - base)
+
+        if s != 0 or addition > 0 or read_positions >= trim_min_check:
+            s += addition
+
+        if s < 0 and read_positions >= trim_min_check:
             break
+
         if s > max_qual:
             max_qual = s
             stop = i
     if start >= stop:
         start, stop = 0, 0
+
     return (start, stop)
 
 

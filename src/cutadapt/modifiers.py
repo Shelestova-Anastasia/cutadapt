@@ -738,10 +738,11 @@ class NextseqQualityTrimmer(SingleEndModifier):
 
 
 class QualityTrimmer(SingleEndModifier):
-    def __init__(self, cutoff_front, cutoff_back, base):
+    def __init__(self, cutoff_front, cutoff_back, base, trim_min_check):
         self.cutoff_front = cutoff_front
         self.cutoff_back = cutoff_back
         self.base = base
+        self.trim_min_check = trim_min_check
         self.trimmed_bases = 0
 
     def __repr__(self):
@@ -752,7 +753,11 @@ class QualityTrimmer(SingleEndModifier):
 
     def __call__(self, read, info: ModificationInfo):
         start, stop = quality_trim_index(
-            read.qualities, self.cutoff_front, self.cutoff_back, self.base
+            read.qualities,
+            self.cutoff_front,
+            self.cutoff_back,
+            self.base,
+            self.trim_min_check,
         )
         self.trimmed_bases += len(read) - (stop - start)
         return read[start:stop]
